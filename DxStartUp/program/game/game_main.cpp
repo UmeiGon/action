@@ -5,7 +5,6 @@
 #include <time.h>
 #include <math.h>
 
-
 //=============================================================================
 // name... game_main
 // work... ゲームのメインループ
@@ -39,8 +38,24 @@ public:
 		}
 		return 0;
 	}
+	bool stopHantei(t2k::vec3 mapPos) {
+		return stopHantei(getMapNum(mapPos));
+	}
+	bool stopHantei(int mapNum) {
+		switch (mapNum)
+		{
+		case 0:
+		default:
+			return false;
+			break;
+		case 1:
+		case 2:
+			return true;
+			break;
+		}
+	}
 	int getMapNum(t2k::vec3 mapPos) {
-		return mapData[(int)(mapPos.y/HABA)][(int)(mapPos.x/HABA)];
+		return mapData[(int)(mapPos.y / HABA)][(int)(mapPos.x / HABA)];
 	}
 	void mapDraw() {
 		for (int h = 0; h < MAPHEI; h++) {
@@ -62,7 +77,8 @@ MapManager mapManager;
 class Character {
 private:
 	int gfx;
-	void moveMapColl(int mapX, int mapY, int xBlockSuu, int yBlockSuu) {
+	//ブロックに埋まっているかの判断
+	void moveMapStopper(int mapX, int mapY, int xBlockSuu, int yBlockSuu) {
 		for (int w = 0; w <= xBlockSuu; w++) {
 			for (int h = 0; h <= yBlockSuu; h++) {
 				int mapnum = mapManager.getMapNum(mapX + w, mapY + h);
@@ -74,7 +90,7 @@ private:
 	}
 	t2k::vec3 pos;
 public:
-	
+
 	int width;
 	int height;
 
@@ -98,24 +114,55 @@ public:
 	}
 	void moveControll() {
 		//playerの動き制御
-		//キャラの周りのブロックを見て、動けるか判断。動けなかったら
+		//キャラの周りのブロックを見て、動けるか判断。動けなかったらその方向の動きを制限
 		//一旦仮で下げてからキャラ底辺のブロックを参照して制御する。ブロック>棘>空白の順番で判定1>2>0
-		playerMove();
+		//playerMove();
 
-		t2k::vec3 mappos(pos.x-width/2,pos.y-height/2,0);
-		//top
-		for (int i = 0; i < width;i+=HABA) {
-			mapManager.getMapNum(mappos+t2k::vec3(i,-1,0));
+		t2k::vec3 preMove(0,0,0);
+		if (CheckHitKey(KEY_INPUT_D)) {
+			preMove += t2k::vec3(3, 0, 0);
 		}
+		if (CheckHitKey(KEY_INPUT_A)) {
+			preMove += t2k::vec3(-3, 0, 0);
+		}
+		preMove+= t2k::vec3(0, 0.98f, 0);
+
+
 		//キャラクタの左下のmap座標
 		int mY = (int)((pos.y + height / 2) / HABA);
 		int mX = (int)((pos.x - width / 2) / HABA);
+		//動きを制御
+		const int TOP = 0;
+		const int RIGHT = 1;
+		const int BOT = 2;
+		const int LEFT = 3;
+		bool moving[4] = {0};//trueだと通れない
+		for (int i = 0; i < width; i += HABA) {
+			if (!moving[TOP])moving[TOP] = mapManager.stopHantei(t2k::vec3(mX + i, mY - height - 1, 0));//top
+			if (!moving[BOT])moving[BOT] = mapManager.stopHantei(t2k::vec3(mX + i, mY + 1, 0));//bot
+		}
+		for (int i = 0; i < height; i += HABA) {
+			if (!moving[RIGHT])moving[RIGHT] = mapManager.stopHantei(t2k::vec3(mX + width + 1, mY - height + i, 0));//right
+			if (!moving[LEFT])moving[LEFT] = mapManager.stopHantei(t2k::vec3(mX - 1, mY - height + i, 0));//Left
+		}
 
-
-
-
+		if (moving[TOP] && preMove.y < 0) {
+			preMove.y = 0;
+		}
+		if (moving[BOT] && preMove.y > 0) {
+			preMove.y = 0;
+		}
+		if (moving[LEFT] && preMove.x < 0) {
+			preMove.x = 0;
+		}
+		if (moving[RIGHT] && preMove.x > 0) {
+			preMove.x = 0;
+		}
+		move(preMove);
 
 		int xoffset = (pos.x - width / 2) - mX*HABA;
+
+
 		//charcterが跨いでるブロック数
 		int botblosuu = (xoffset + width) / HABA;
 		int playerTrans = 0;

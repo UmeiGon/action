@@ -11,8 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="program\engine\game_object.cpp" />
     <ClCompile Include="program\game\game_main.cpp" />
     <ClCompile Include="program\game\game_setup.cpp" />
+    <ClCompile Include="program\library\sprite.cpp" />
+    <ClCompile Include="program\library\translation.cpp" />
     <ClCompile Include="program\support\DebugTrace.cpp" />
     <ClCompile Include="program\support\fmfmap.cpp" />
     <ClCompile Include="program\support\FrameRateController.cpp" />
@@ -21,8 +24,12 @@
     <ClCompile Include="program\system\sys_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="program\engine\game_object.h" />
     <ClInclude Include="program\game\game_main.h" />
     <ClInclude Include="program\game\game_setup.h" />
+    <ClInclude Include="program\library\sprite.h" />
+    <ClInclude Include="program\library\translation.h" />
+    <ClInclude Include="program\library\Utility.h" />
     <ClInclude Include="program\support\bitmap.h" />
     <ClInclude Include="program\support\DebugTrace.h" />
     <ClInclude Include="program\support\fmfmap.h" />
